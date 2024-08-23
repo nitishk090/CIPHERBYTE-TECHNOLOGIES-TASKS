@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Manager</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: rgb(94, 94, 223);
+}
+
+header {
+  background-color: #000000;
+  color: #fff;
+  padding: 1em;
+  text-align: center;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+nav li {
+  margin-right: 20px;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+}
+
+nav a:hover {
+    color: rgb(94, 94, 223);
+}
+
+main {
+  display: inline;
+  flex-direction: column;
+  align-items: center;
+  padding: 2em;
+  
+}
+
+section {
+  color: white;
+  padding: 0.7em;
+  margin-bottom: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  width: 80%;
+  background-color: #000000;
+  margin-left: 40px;
+
+}
+
+h2 {
+  margin-top: 0;
+}
+
+#event-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 70%;
+}
+
+#event-list li {
+  margin-bottom: 10px;
+}
+
+#event-list li span {
+  font-weight: bold;
+}
+
+#add-event {
+    width: 30%;
+    margin-left: 35%;
+    height: 750px;
+}
+
+#add-event-form {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  margin-bottom: 300px;
+  margin-left: 20px;
+  justify-content: center;
+  align-items: center;
+  padding-right: 20px;
+  
+}
+
+#add-event-form label {
+  margin-bottom: 10px;
+}
+
+#add-event-form input, #add-event-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+}
+
+#add-event-btn {
+    background-color: rgb(94, 94, 223);
+    color: white;
+    height: 40px;
+    width: 100px;
+    font-size: medium;
+    border-radius: 50px;
+}
+
+.delete-btn {
+    background-color: rgb(94, 94, 223);
+    color: white;
+    height: 40px;
+    width: 100px;
+    font-size: medium;
+    border-radius: 50px;
+}
+
+#add-event-form button[type="submit"] {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: rgb(94, 94, 223);
+  
+}
+
+#add-event-form button[type="submit"]:hover {
+  background-color: rgb(94, 94, 223);
+
+}
+
+#profile {
+  text-align: center;
+}
+
+#profile-name, #profile-email {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#add-event">Add Event</a></li>
+        <li><a href="#profile">Profile</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section id="events">
+      <h2>Events</h2>
+      <ul id="event-list">
+        <!-- events will be listed here -->
+      </ul>
+    </section>
+    <section id="add-event">
+      <h2>Add Event</h2>
+      <form id="add-event-form">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title"><br><br>
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date"><br><br>
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time"><br><br>
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location"><br><br>
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"></textarea><br><br>
+        <button id="add-event-btn">Add Event</button>
+      </form>
+    </section>
+    <section id="profile">
+      <h2>Profile</h2>
+      <p id="profile-name"></p>
+      <p id="profile-email"></p>
+    </section>
+  </main>
+
+
+  <script>
+    const eventList = document.getElementById('event-list');
+const addEventForm = document.getElementById('add-event-form');
+const addEventBtn = document.getElementById('add-event-btn');
+const profileName = document.getElementById('profile-name');
+const profileEmail = document.getElementById('profile-email');
+
+let events = [];
+let user = {};
+
+// load events from local storage
+// load events from local storage
+if (localStorage.getItem('events')) {
+  events = JSON.parse(localStorage.getItem('events'));
+  renderEvents();
+}
+
+// load user from local storage
+if (localStorage.getItem('user')) {
+  user = JSON.parse(localStorage.getItem('user'));
+  profileName.textContent = user.name;
+  profileEmail.textContent = user.email;
+}
+
+// add event form submission handler
+addEventForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const title = document.getElementById('title').value;
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
+  const location = document.getElementById('location').value;
+  const description = document.getElementById('description').value;
+
+  const newEvent = {
+    title,
+    date,
+    time,
+    location,
+    description,
+    userId: user.id
+  };
+
+  events.push(newEvent);
+  localStorage.setItem('events', JSON.stringify(events));
+  renderEvents();
+  addEventForm.reset();
+});
+
+// render events
+function renderEvents() {
+  eventList.innerHTML = '';
+  events.forEach((event) => {
+    const eventHTML = `
+      <li>
+        <span>${event.title}</span>
+        <span>${event.date} ${event.time}</span>
+        <span>${event.location}</span>
+        <p>${event.description}</p>
+        <button class="delete-btn" data-id="${event.id}">Delete</button>
+      </li>
+    `;
+    eventList.innerHTML += eventHTML;
+  });
+
+  // add event deletion handler
+  const deleteBtns = document.querySelectorAll('.delete-btn');
+  deleteBtns.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const eventId = e.target.dataset.id;
+      events = events.filter((event) => event.id !== eventId);
+      localStorage.setItem('events', JSON.stringify(events));
+      renderEvents();
+    });
+  });
+}
+
+// login form submission handler
+const loginForm = document.getElementById('login-form');
+loginForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  // todo: implement login logic here
+  // for now, just set the user object
+  user = {
+    id: 1,
+    name: 'John Doe',
+    email
+  };
+  localStorage.setItem('user', JSON.stringify(user));
+  profileName.textContent = user.name;
+  profileEmail.textContent = user.email;
+});
+  </script>
+</body>
+</html>
